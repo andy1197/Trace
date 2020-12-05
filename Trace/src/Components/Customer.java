@@ -10,20 +10,20 @@ public class Customer {
 	private String email;
 	private String phoneNum;
 	private String addr;
-	//private Address addr;
+	private Address addrObj;
 	
 	/*
 	 * Customer constructor
 	 */
-	public Customer(String name, int age, String email, String phoneNum, String addr)
+	public Customer(String name, int age, String email, String phoneNum, Address addr)
 	{
 		this.name = name;
 		this.age = age;
 		this.email = email;
 		this.phoneNum = phoneNum;
-		this.addr = addr;
+		this.addrObj = addr;
+		this.addr = addrObj.toString();
 	}
-	
 	/*
 	 * Sets name to given String
 	 */
@@ -61,15 +61,16 @@ public class Customer {
 	 */
 	public void setAddr(String e)
 	{
-		this.addr = e;
+		//this.addr = e;
 	}
 	
-	/*
-	public void setAddr(Address e)
+	
+	public void setAddrObject(Address e)
 	{
-		this.addr = e;
+		this.addrObj = e;
+		this.addr = this.addrObj.toString();
 	}
-	*/
+	
 	
 	/*
 	 * Returns name
@@ -113,9 +114,9 @@ public class Customer {
 	/*
 	 * Returns address as a string
 	 */
-	public String getAddressString()
+	public Address getAddrObject()
 	{
-		return this.addr.toString();
+		return addrObj;
 	}
 	
 	/*

@@ -145,8 +145,14 @@ public class Main extends Application {
         textEmail.setPromptText("Email");
         TextField textPhoneNum = new TextField();
         textPhoneNum.setPromptText("Phone Number");
-        TextField textAddress = new TextField();
-        textAddress.setPromptText("Address");
+        TextField textStreetAddr = new TextField();
+        textStreetAddr.setPromptText("Street Address");
+        TextField textCity = new TextField();
+        textCity.setPromptText("City");
+        TextField textState = new TextField();
+        textState.setPromptText("State");
+        TextField textZipcode = new TextField();
+        textZipcode.setPromptText("Zipcode");
         
         // window buttons
         Button done = new Button("Done");
@@ -164,13 +170,15 @@ public class Main extends Application {
 				// check to make sure there is valid input in each text field
 				if(textName.getText() != null && textAge.getText() != null && 
 						textEmail.getText() != null && textPhoneNum.getText() != null 
-						&& textAddress.getText() != null && !textName.getText().isEmpty() && !textAge.getText().isEmpty() && 
+						&& textStreetAddr.getText() != null && !textName.getText().isEmpty() && !textAge.getText().isEmpty() && 
 						!textEmail.getText().isEmpty() && !textPhoneNum.getText().isEmpty() 
-						&& !textAddress.getText().isEmpty()) {
+						&& !textStreetAddr.getText().isEmpty() && textCity.getText() != null && textState != null && textZipcode != null 
+						&& !textCity.getText().isEmpty() && !textState.getText().isEmpty() && !textZipcode.getText().isEmpty()) {
 					
 					// save text
-					manager.addCustomer(new Customer(textName.getText(), Integer.parseInt(textAge.getText()),textEmail.getText(), textPhoneNum.getText(), textAddress.getText()) );
-					
+					Address customerAddr = new Address(textStreetAddr.getText(), textCity.getText(), textState.getText(), textZipcode.getText());
+					manager.addCustomer(new Customer(textName.getText(), Integer.parseInt(textAge.getText()),textEmail.getText(), textPhoneNum.getText(), customerAddr));
+				
 					// redisplay table
 					root.setCenter(setTable());
 					
@@ -179,7 +187,10 @@ public class Main extends Application {
         	        textAge.clear();
         	        textEmail.clear();
         	        textPhoneNum.clear();
-        	        textAddress.clear();
+        	        textStreetAddr.clear();
+        	        textCity.clear();
+        	        textState.clear();
+        	        textZipcode.clear();
 				}
 				// there is missing/invalid info
 				else {
@@ -198,7 +209,10 @@ public class Main extends Application {
         	        textAge.clear();
         	        textEmail.clear();
         	        textPhoneNum.clear();
-        	        textAddress.clear();
+        	        textStreetAddr.clear();
+        	        textCity.clear();
+        	        textState.clear();
+        	        textZipcode.clear();
         	        customerCreateScreen.close();
         	    }
         	});
@@ -209,7 +223,10 @@ public class Main extends Application {
         box.getChildren().add(textAge);
         box.getChildren().add(textEmail);
         box.getChildren().add(textPhoneNum);
-        box.getChildren().add(textAddress);
+        box.getChildren().add(textStreetAddr);
+        box.getChildren().add(textCity);
+        box.getChildren().add(textState);
+        box.getChildren().add(textZipcode);
         box.getChildren().add(done);
         box.getChildren().add(cancel);
         Scene scene = new Scene(box, 300, 400);
@@ -251,6 +268,8 @@ public class Main extends Application {
 			selectionModel.setSelectionMode(SelectionMode.SINGLE);
 			Customer selectedCust = selectedItems.get(0);
 			int selectedIndex = selectedIndices.get(0);
+			Address customerAddr = selectedCust.getAddrObject();
+			
 			
 			// set up window
 			final Label error = new Label();
@@ -271,9 +290,15 @@ public class Main extends Application {
 	        textEmail.setPromptText(selectedCust.getEmail());
 	        TextField textPhoneNum = new TextField();
 	        textPhoneNum.setPromptText(selectedCust.getPhoneNum());
-	        TextField textAddress = new TextField();
-	        textAddress.setPromptText(selectedCust.getAddr());
-	
+	        TextField textStreetAddr = new TextField();
+	        textStreetAddr.setPromptText(customerAddr.getStreetAddr());
+	        TextField textCity = new TextField();
+	        textCity.setPromptText(customerAddr.getCity());
+	        TextField textState = new TextField();
+	        textState.setPromptText(customerAddr.getState());
+	        TextField textZipcode = new TextField();
+	        textZipcode.setPromptText(customerAddr.getZipcode());
+	        
 	        // buttons
 	        Button done = new Button("Done");
 	        Button cancel = new Button("Cancel");
@@ -299,14 +324,24 @@ public class Main extends Application {
 					if(textEmail.getText() != null && !textEmail.getText().isEmpty()) {
 						selectedCust.setEmail(textEmail.getText());
 					}
-					if(textAddress.getText() != null && !textAddress.getText().isEmpty()) {
-						selectedCust.setAddr(textAddress.getText());
+					if(textStreetAddr.getText() != null && !textStreetAddr.getText().isEmpty()) {
+						customerAddr.setStreetAddr(textStreetAddr.getText());
 					}
-						
+					
+					if(textCity.getText() != null && !textCity.getText().isEmpty()) {
+						customerAddr.setCity(textCity.getText());
+					}
+					if(textState.getText() != null && !textState.getText().isEmpty()) {
+						customerAddr.setState(textState.getText());
+					}
+					if(textZipcode.getText() != null && !textZipcode.getText().isEmpty()) {
+						customerAddr.setZipcode(textZipcode.getText());
+					}
 					if(textPhoneNum.getText() != null && !textPhoneNum.getText().isEmpty()) {
 						selectedCust.setPhoneNum(textPhoneNum.getText());
 					}
 					
+					selectedCust.setAddrObject(customerAddr);
 					manager.setCustomer(selectedIndex, selectedCust);
 						
 				
@@ -318,7 +353,10 @@ public class Main extends Application {
 	        	        textAge.clear();
 	        	        textEmail.clear();
 	        	        textPhoneNum.clear();
-	        	        textAddress.clear();
+	        	        textStreetAddr.clear();
+	        	        textCity.clear();
+	        	        textState.clear();
+	        	        textZipcode.clear();
 				}
 
 				
@@ -333,7 +371,10 @@ public class Main extends Application {
 	        	        textAge.clear();
 	        	        textEmail.clear();
 	        	        textPhoneNum.clear();
-	        	        textAddress.clear();
+	        	        textStreetAddr.clear();
+	        	        textCity.clear();
+	        	        textState.clear();
+	        	        textZipcode.clear();
 	        	        editScreen.close();
 	        	    }
 	        	});
@@ -344,7 +385,10 @@ public class Main extends Application {
 	        box.getChildren().add(textAge);
 	        box.getChildren().add(textEmail);
 	        box.getChildren().add(textPhoneNum);
-	        box.getChildren().add(textAddress);
+	        box.getChildren().add(textStreetAddr);
+	        box.getChildren().add(textCity);
+	        box.getChildren().add(textState);
+	        box.getChildren().add(textZipcode);
 	        box.getChildren().add(done);
 	        box.getChildren().add(cancel);
 	        Scene scene = new Scene(box, 300, 400);
