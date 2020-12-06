@@ -24,7 +24,6 @@ public class InsightsGenerator {
 			int[] thisCount = h.getProductCount();
 			for (int i = 0; i < thisCount.length; i++) {
 				count[i] = count[i] + thisCount[i];
-				System.out.println(count[i]);
 			}
 		}
 		int max = 0;
@@ -36,9 +35,7 @@ public class InsightsGenerator {
 			}
 		}
 		PurchaseHistory h = arr.get(0).getPurchaseHistory();
-		System.out.println(count[maxIndex]);
 		return h.getProduct(maxIndex);
-
 	}
 	
 	public double averageAge() {
@@ -49,6 +46,20 @@ public class InsightsGenerator {
 			count++;
 		}
 		return sum / count; 
+	}
+	
+	public double averageSpending() {
+		double sum = 0;
+		for (Customer c : arr) {
+			PurchaseHistory h = c.getPurchaseHistory();
+			ArrayList<Product> history = h.getHistory();
+			int spendings = 0;
+			for (Product p : history) {
+				spendings += p.getPrice();
+			}
+			sum += spendings;
+		}
+		return sum / arr.size();
 	}
 	
 	public Customer highestSpender() {
