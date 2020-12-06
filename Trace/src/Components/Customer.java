@@ -1,5 +1,7 @@
 package Components;
 
+import java.util.ArrayList;
+
 /*
  * Customer 
  */
@@ -11,6 +13,9 @@ public class Customer {
 	private String phoneNum;
 	private String addr;
 	private Address addrObj;
+	private PurchaseHistory history;
+	private String demographic;
+	private String loyalty;
 	
 	/*
 	 * Customer constructor
@@ -23,6 +28,11 @@ public class Customer {
 		this.phoneNum = phoneNum;
 		this.addrObj = addr;
 		this.addr = addrObj.toString();
+		history = new PurchaseHistory();
+		demographic = history.getDemographic();
+		loyalty = history.getCustomerLoyalty();
+		
+		
 	}
 	/*
 	 * Sets name to given String
@@ -97,6 +107,20 @@ public class Customer {
 	}
 	
 	/*
+	 * returns the customer's demographic
+	 */
+	public String getDemographic() {
+		return demographic;
+	}
+	
+	/*
+	 * returns the customer's loyalty
+	 */
+	public String getLoyalty() {
+		return loyalty;
+	}
+	
+	/*
 	public Address getAddress()
 	{
 		return this.addr;
@@ -125,5 +149,12 @@ public class Customer {
 	public int getAge()
 	{
 		return this.age;
+	}
+	
+	/*
+	 * Returns purchase history
+	 */
+	public PurchaseHistory getPurchaseHistory() {
+		return history;
 	}
 }

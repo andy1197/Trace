@@ -21,11 +21,16 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import java.util.ArrayList;
+
 import Components.*;
 
 public class Main extends Application {
 	TableView<Customer> customerTable; // table of Customers
+	TableView<Product> productTable; // table of products
 	static CustomerManager manager;	// holds Customers
+	ArrayList<Product> productHistory; // holds a single customer's product history
 	BorderPane root; // main GUI window
 	
 	
@@ -45,7 +50,8 @@ public class Main extends Application {
 			Button create = new Button("Create Customer");
 			Button edit = new Button("Edit Customer");
 			Button delete = new Button("Delete Customer");
-			//Button seg = new Button("Delete Customer");
+			//Button seg = new Button("Segment Customer");
+			Button insights = new Button("Produce Insights");
 			Button traceCus = new Button("Trace Customer");
 			
 			// 
@@ -62,6 +68,18 @@ public class Main extends Application {
 				
 			});
 			
+			insights.setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent event) {
+					// TODO Auto-generated method stub
+					showInsightsScreen();
+
+				}
+
+			});
+			
+			
 			delete.setOnAction(new EventHandler<ActionEvent>() {
 
 				@Override
@@ -71,6 +89,17 @@ public class Main extends Application {
 
 				}
 
+			});
+			
+			traceCus.setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent event) {
+					// TODO Auto-generated method stub
+					showTraceScreen();
+					
+				}
+				
 			});
 			
 
@@ -86,7 +115,7 @@ public class Main extends Application {
 			});
 			
 			// add buttons to window
-			menu.getChildren().addAll(create, edit, delete, traceCus);
+			menu.getChildren().addAll(create, edit, delete, traceCus, insights);
 
 			
 			// create and set border pane components
@@ -94,10 +123,10 @@ public class Main extends Application {
 			root.setPadding(new Insets(20, 20, 20, 20));
 			root.setTop(menu);
 			menu.setAlignment(Pos.CENTER);
-			root.setCenter(setTable());
+			root.setCenter(setCustomerTable());
 			
 			// set up scene
-			Scene scene = new Scene(root,550,500);
+			Scene scene = new Scene(root,800,800);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.show();
@@ -119,6 +148,47 @@ public class Main extends Application {
 			obsCustomers.add(c);
 		}
 		return obsCustomers;
+	}
+	
+	/*
+	 * Load products from product history array to table
+	 */
+	public ObservableList<Product> loadProductHistory(){
+		ObservableList<Product> obsProducts = FXCollections.observableArrayList();
+		for(Product p : productHistory)
+		{
+			obsProducts.add(p);
+		}
+		return obsProducts;
+	}
+	
+	/*
+	 * Show insights screen
+	 */
+	public void showInsightsScreen() {
+		if (manager.getSize() == 0) {
+			return;
+		}
+        Stage insightsScreen = new Stage();
+        VBox box = new VBox();
+        box.setPadding(new Insets(10));
+        box.setAlignment(Pos.CENTER);
+        
+        InsightsGenerator insights = new InsightsGenerator(manager.getCustomerList());
+        Label titleLabel = new Label("Insights");
+        Label popProduct = new Label("Most popular product: " + insights.popularProduct().getName());
+        Label averageAge = new Label("Average Age: " + insights.averageAge());
+        Label highestSpender = new Label("Highest Spender: " + insights.highestSpender().getName());
+        
+		box.getChildren().add(titleLabel);
+		box.getChildren().add(popProduct);
+		box.getChildren().add(averageAge);
+		box.getChildren().add(highestSpender);
+		
+        Scene scene = new Scene(box, 300, 400);
+        insightsScreen.setScene(scene);
+        insightsScreen.show();
+        
 	}
 	
 	/*
@@ -180,7 +250,7 @@ public class Main extends Application {
 					manager.addCustomer(new Customer(textName.getText(), Integer.parseInt(textAge.getText()),textEmail.getText(), textPhoneNum.getText(), customerAddr));
 				
 					// redisplay table
-					root.setCenter(setTable());
+					root.setCenter(setCustomerTable());
 					
 					// clear text
 					textName.clear();
@@ -229,10 +299,71 @@ public class Main extends Application {
         box.getChildren().add(textZipcode);
         box.getChildren().add(done);
         box.getChildren().add(cancel);
+        
         Scene scene = new Scene(box, 300, 400);
         customerCreateScreen.setScene(scene);
         customerCreateScreen.show();
     }
+	
+	/*
+	 * Shows Trace Customer pop-up window
+	 */
+	public void showTraceScreen() {
+		final String[] productList = {"Chicken Nuggets", "Backpack", "Potato", "Apple", "Orange", "Target Gift Card", 
+				"Chips", "Pasta", "Rice", "Water", "Juice", "Soda", "Pasta Sauce", "Lettuce", "Tomato", "Ketchup", "Mustard",
+				"Salt", "Pepper", "Cup"};
+		// set up stage
+        Stage traceScreen = new Stage();
+        VBox box = new VBox();
+        box.setPadding(new Insets(10));
+        box.setAlignment(Pos.CENTER);
+        Label label = new Label("Trace Customer");
+
+        
+		// allow selection if there are customers
+        Customer c = null;
+		if(manager.getSize() != 0)
+		{
+			TableViewSelectionModel<Customer> selectionModel = customerTable.getSelectionModel();
+			ObservableList<Customer> selectedItems = selectionModel.getSelectedItems();
+			selectionModel.setSelectionMode(SelectionMode.SINGLE);
+			
+			c = selectedItems.get(0);
+			PurchaseHistory h = c.getPurchaseHistory();
+			productHistory = h.getHistory();
+
+		}
+		
+		else {
+			System.out.println("No customers selected!");
+		}
+		
+        String s = c.getDemographic();
+        Label label2 = new Label("Demographic: " + s);
+        label2.setTextFill(Color.INDIANRED);
+        
+        String loyalty = c.getLoyalty();
+        Label label3 = new Label("Customer Loyalty: " + loyalty);
+        if (loyalty.equals("Golden Member")) {
+        	label3.setTextFill(Color.GOLD);
+        }
+        else if (loyalty.equals("Silver Member")) {
+        	label3.setTextFill(Color.SILVER);
+        }
+        else if (loyalty.equals("Bronze Member")) {
+        	label3.setTextFill(Color.BROWN);
+        }
+        
+		box.getChildren().add(label);
+		box.getChildren().add(label2);
+		box.getChildren().add(label3);
+		box.getChildren().add(setProductHistoryTable());
+
+        Scene scene = new Scene(box, 300, 400);
+        traceScreen.setScene(scene);
+        traceScreen.show();
+		
+	}
 	
 	/*
 	 * Deletes selected customer
@@ -246,7 +377,7 @@ public class Main extends Application {
 			ObservableList<Customer> selectedItems = selectionModel.getSelectedItems();
 			selectionModel.setSelectionMode(SelectionMode.SINGLE);
 			manager.deleteCustomer(selectedItems.get(0)); // delete selected customer
-			root.setCenter(setTable());	// refresh customer table
+			root.setCenter(setCustomerTable());	// refresh customer table
 
 		}
 		else {
@@ -346,7 +477,7 @@ public class Main extends Application {
 						
 				
 						// redisplay table
-						root.setCenter(setTable());
+						root.setCenter(setCustomerTable());
 						
 						// clear text
 						textName.clear();
@@ -358,7 +489,6 @@ public class Main extends Application {
 	        	        textState.clear();
 	        	        textZipcode.clear();
 				}
-
 				
 			});
 	        
@@ -396,7 +526,7 @@ public class Main extends Application {
 	        editScreen.show();
 			
 			// refresh table
-			root.setCenter(setTable());
+			root.setCenter(setCustomerTable());
 
 		}
 		else {
@@ -406,9 +536,38 @@ public class Main extends Application {
 	}
 	
 	/*
+	 * Set table of product history
+	 */
+	public TableView<Product> setProductHistoryTable() {
+		// allow selection if there is are customers in the list
+		if(manager.getSize() != 0)
+		{
+			TableViewSelectionModel<Customer> selectionModel = customerTable.getSelectionModel();
+			ObservableList<Customer> selectedItems = selectionModel.getSelectedItems();
+			selectionModel.setSelectionMode(SelectionMode.MULTIPLE);
+
+		}
+		
+		// create table columns
+		TableColumn<Product, String> nameColumn = new TableColumn<>("Name");
+		nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+		TableColumn<Product, Integer> priceColumn = new TableColumn<>("Price");
+		priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+
+
+		// create table and set table elements
+		productTable = new TableView<>();
+		productTable.setItems(loadProductHistory());
+		productTable.getColumns().addAll(nameColumn, priceColumn);
+		productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		
+		return productTable;
+	}
+	
+	/*
 	 * Set table of customers
 	 */
-	public TableView<Customer> setTable() {
+	public TableView<Customer> setCustomerTable() {
 		// allow selection if there is are customers in the list
 		if(manager.getSize() != 0)
 		{

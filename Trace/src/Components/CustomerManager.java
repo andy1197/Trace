@@ -6,7 +6,7 @@ import java.util.ArrayList;
  */
 public class CustomerManager {
 	
-	private ArrayList<Customer> customers; // list of cutomers
+	private ArrayList<Customer> customers; // list of customers
 	
 	/*
 	 * Customer Manager constructor
@@ -14,6 +14,7 @@ public class CustomerManager {
 	public CustomerManager() 
 	{
 		customers = new ArrayList<Customer>();
+		
 	}
 	
 	/*
