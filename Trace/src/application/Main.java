@@ -8,6 +8,7 @@ import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
@@ -22,12 +23,19 @@ import javafx.scene.paint.Color;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.awt.List;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import Components.*;
 
 public class Main extends Application {
 	TableView<Customer> customerTable; // table of Customers
+	ArrayList<Customer> backupList; // backup table for when we update customerTable
 	TableView<Product> productTable; // table of products
 	static CustomerManager manager;	// holds Customers
 	ArrayList<Product> productHistory; // holds a single customer's product history
@@ -50,7 +58,7 @@ public class Main extends Application {
 			Button create = new Button("Create Customer");
 			Button edit = new Button("Edit Customer");
 			Button delete = new Button("Delete Customer");
-			//Button seg = new Button("Segment Customer");
+			Button segment = new Button("Segment Customer");
 			Button insights = new Button("Produce Insights");
 			Button traceCus = new Button("Trace Customer");
 			
@@ -63,6 +71,17 @@ public class Main extends Application {
 				public void handle(ActionEvent event) {
 					// TODO Auto-generated method stub
 					showCreateCustomerScreen();
+					
+				}
+				
+			});
+			
+			segment.setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent event) {
+					// TODO Auto-generated method stub
+					showSegmentCustomerScreen();
 					
 				}
 				
@@ -102,7 +121,6 @@ public class Main extends Application {
 				
 			});
 			
-
 			edit.setOnAction(new EventHandler<ActionEvent>() {
 
 				@Override
@@ -115,7 +133,7 @@ public class Main extends Application {
 			});
 			
 			// add buttons to window
-			menu.getChildren().addAll(create, edit, delete, traceCus, insights);
+			menu.getChildren().addAll(create, edit, delete, segment, traceCus, insights);
 
 			
 			// create and set border pane components
@@ -130,8 +148,6 @@ public class Main extends Application {
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.show();
-			
-			
 			
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -191,6 +207,100 @@ public class Main extends Application {
         
 	}
 	
+	public void showSegmentCustomerScreen() {
+		if(manager.getSize() == 0)
+		{
+			System.out.println("No customers selected!");
+		}
+		Stage segmentCustomerScreen = new Stage();
+        VBox box = new VBox();
+        box.setPadding(new Insets(10));
+        box.setAlignment(Pos.CENTER);
+        
+        Segmenter s = new Segmenter(manager.getCustomerList()); // create a backup of the customer list
+
+        backupList = s.makeBackupTable(manager.getCustomerList());
+        
+        Label titleLabel = new Label("Segment Customers");
+        Button reset = new Button("Reset all");
+        Button segmentButton = new Button("Segment!");
+        
+		// segment by age
+        TextField minAge = new TextField();
+        minAge.setPromptText("Min Age");
+        TextField maxAge = new TextField();
+        maxAge.setPromptText("Max Age");
+
+		// segment by loyalty
+        ChoiceBox<String> choiceBox = s.getLoyaltyChoiceBox();
+
+        // segment by demographic 
+        
+		// segment by area code
+        TextField areaCodeField = new TextField();
+        areaCodeField.setPromptText("Area Code (3 Digits)");
+
+        
+		reset.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				manager.setCustomerList(backupList);
+				root.setCenter(setCustomerTable());
+				segmentCustomerScreen.close();
+			}
+
+		});
+		
+		segmentButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				// assign int values
+				int minAgeInt = 0;
+				if (minAge.getText() != null && !minAge.getText().isEmpty()) {
+			        minAgeInt = Integer.parseInt(minAge.getText());
+				}
+				int maxAgeInt;
+				if (maxAge.getText() != null && !maxAge.getText().isEmpty()) {
+			        maxAgeInt = Integer.parseInt(maxAge.getText());
+				}
+				else {
+					maxAgeInt = Integer.MAX_VALUE;
+				}
+				// assign loyalty values
+		        String requestedLoyalty = choiceBox.getValue();
+		        System.out.println(requestedLoyalty);
+		        // assign area code values
+		        int areaCode = -1;
+		        if (areaCodeField.getText() != null && !areaCodeField.getText().isEmpty() && areaCodeField.getText().length() == 3) {
+		        	areaCode = Integer.parseInt(areaCodeField.getText());
+		        }
+		        // delete everything from the table that doesn't fulfill the requirements
+		        ArrayList<Customer> newList = s.updateList(minAgeInt, maxAgeInt, requestedLoyalty, areaCode, manager.getCustomerList());
+		        manager.setCustomerList(newList);
+		        root.setCenter(setCustomerTable());
+			}
+
+		});
+		
+		box.getChildren().add(titleLabel);
+		
+		box.getChildren().add(minAge);
+		box.getChildren().add(maxAge);
+		
+		box.getChildren().add(choiceBox);
+		
+		box.getChildren().add(areaCodeField);
+		
+		box.getChildren().add(segmentButton);
+		box.getChildren().add(reset);
+		
+        Scene scene = new Scene(box, 300, 400);
+        segmentCustomerScreen.setScene(scene);
+        segmentCustomerScreen.show();
+	}
+	
 	/*
 	 * Shows Create Customer pop-up window
 	 */
@@ -227,7 +337,6 @@ public class Main extends Application {
         // window buttons
         Button done = new Button("Done");
         Button cancel = new Button("Cancel");
-        
         
         //
         // button actions
@@ -309,9 +418,6 @@ public class Main extends Application {
 	 * Shows Trace Customer pop-up window
 	 */
 	public void showTraceScreen() {
-		final String[] productList = {"Chicken Nuggets", "Backpack", "Potato", "Apple", "Orange", "Target Gift Card", 
-				"Chips", "Pasta", "Rice", "Water", "Juice", "Soda", "Pasta Sauce", "Lettuce", "Tomato", "Ketchup", "Mustard",
-				"Salt", "Pepper", "Cup"};
 		// set up stage
         Stage traceScreen = new Stage();
         VBox box = new VBox();
@@ -336,6 +442,7 @@ public class Main extends Application {
 		
 		else {
 			System.out.println("No customers selected!");
+			return;
 		}
 		
         String s = c.getDemographic();
@@ -441,7 +548,6 @@ public class Main extends Application {
 
 				@Override
 				public void handle(ActionEvent event) {
-					// TODO Auto-generated method stub
 					error.setText(null); // clear label
 					
 					// change data if new text is entered
@@ -595,7 +701,41 @@ public class Main extends Application {
 		customerTable.getColumns().addAll(nameColumn, ageColumn, emailColumn, phoneNumColumn, addressColumn);
 		customerTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		
+		updateDatabase();
 		return customerTable;
+	}
+	
+	/*
+	 * Updates text file database
+	 */
+	public static void updateDatabase() {
+		try {
+			ArrayList<String> lines = new ArrayList<>();
+			ArrayList<Customer> cList = manager.getCustomerList();
+			
+			// loop through customer list to add data
+			for(Customer c : cList)
+			{
+				lines.add("Name: " + c.getName());
+				lines.add("Age: " + Integer.toString(c.getAge()));
+				lines.add("Email: " + c.getEmail());
+				lines.add("Phone: " + c.getPhoneNum());
+				lines.add("Address: " + c.getAddr());
+				lines.add("Demographic: " + c.getDemographic());
+				lines.add("Loyalty: "+ c.getLoyalty());
+				lines.add("");
+			}
+			
+			// write data to file
+			Path file = Paths.get("customerDatabase.txt");
+			Files.write(file, lines, StandardCharsets.UTF_8);	
+		}
+		catch(IOException e)
+		{
+			System.out.println("An error occured when updating the database");
+			e.printStackTrace();
+		}
+		
 	}
 	
 	/*

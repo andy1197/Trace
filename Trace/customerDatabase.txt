@@ -1,0 +1,9 @@
+Name: bob
+Age: 57
+Email: jlajfkda
+Phone: 408
+Address: dkjad
+djksajd, djkslajd dsa
+Demographic: Lower Middle Class
+Loyalty: Member
+

@@ -58,6 +58,14 @@ public class CustomerManager {
 	}
 	
 	/*
+	 * Sets the customer list
+	 */
+	public void setCustomerList(ArrayList<Customer> arr)
+	{
+		customers = arr;
+	}
+	
+	/*
 	 * Sets a Customer to given index in list
 	 */
 	public void setCustomer(int i, Customer c)
