@@ -223,7 +223,7 @@ public class Main extends Application {
 		Label popProduct = new Label("Most popular product: " + insights.popularProduct().getName());
 		Label averageAge = new Label("Average Age: " + df.format(insights.averageAge()));
 		Label highestSpender = new Label("Highest Spender: " + insights.highestSpender().getName());
-		Label averageSpending = new Label("Avearge Money Spent: " + df.format(insights.averageSpending()));
+		Label averageSpending = new Label("Average Money Spent: " + df.format(insights.averageSpending()));
 
 		box.getChildren().addAll(titleLabel, popProduct, averageAge, highestSpender, averageSpending);
 
